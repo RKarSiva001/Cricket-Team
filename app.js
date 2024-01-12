@@ -49,12 +49,12 @@ app.get("/movies/", async (request, response) => {
   ORDER BY movie_id;`;
 
   const moviesArray = await db.all(getMoviesQuery);
+  const { movie_id, director_id, movie_name, lead_actor } = moviesArray;
   response.send(
     moviesArray.map((eachMovie) =>
       convertDbObjectToResponseObjectMovie(eachMovie)
     )
   );
-  console.log(moviesArray);
 });
 
 app.post("/movies/", async (request, response) => {
@@ -63,7 +63,7 @@ app.post("/movies/", async (request, response) => {
   const { directorId, movieName, leadActor } = movieDetails;
   const addMovieQuery = `INSERT INTO movie (director_id, movie_name, lead_actor)
   VALUES (
-    '${directorId}', ${movieName}, '${leadActor}');`;
+    ${directorId}, '${movieName}', '${leadActor}');`;
   const dbResponse = await db.run(addMovieQuery);
   response.send("Movie Successfully Added");
 });
@@ -95,7 +95,7 @@ app.delete("/movies/:movieId", async (request, response) => {
   response.send("Movie Removed");
 });
 
-app.get("/director/", async (request, response) => {
+app.get("/directors/", async (request, response) => {
   const getDirectorsQuery = `SELECT * FROM director
 
   ORDER BY director_id;`;
@@ -103,17 +103,17 @@ app.get("/director/", async (request, response) => {
   const directorArray = await db.all(getDirectorsQuery);
   response.send(
     directorArray.map((eachDirector) =>
-      convertDbObjectToResponseObjectMovie(eachDirector)
+      convertDbObjectToResponseObjectDirector(eachDirector)
     )
   );
 });
 
 app.get("/directors/:directorId/movies/", async (request, response) => {
   const { directorId } = request.params;
-  const getMoviesQuery = `SELECT * FROM director 
-  WHERE director_id = ${movieId};`;
-  const movies = await db.get(getMoviesQuery);
-  response.send(movies);
+  const getMoviesQuery = `SELECT * FROM movie 
+  WHERE director_id = ${directorId} ORDER BY movie_id;`;
+  const directorMoviesArray = await db.get(getMoviesQuery);
+  response.send(directorMoviesArray);
 });
 
 module.exports = app;
